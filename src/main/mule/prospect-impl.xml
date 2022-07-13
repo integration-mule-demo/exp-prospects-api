@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="get-prospect-subflow" doc:id="cda9f6e8-1563-4509-bf55-16b578e7be7e" >
+		<json-logger:logger doc:name="Start" doc:id="98ef9b99-f218-4c18-aa2c-f88556434001" config-ref="JSON_Logger_Config" message="Start getting prospects from Proc API">
+			<json-logger:content ><![CDATA[#[import modules::JSONLoggerModule output application/json ---
+{
+    format: attributes.queryParams.outputFormat
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<set-variable value="#[attributes.queryParams.outputFormat]" doc:name="Set outputFormat" doc:id="645c9d92-30ec-4ce2-9365-5770ab3d9cb6" variableName="outputFormat"/>
+		<http:request method="GET" doc:name="Get Prospects" doc:id="48cb7b6e-03b6-450e-9178-95b374fd1e2a" path="/prospects" config-ref="Request-proc-prospects-api"/>
+		<choice doc:name="Select output format" doc:id="51208071-c6d5-4045-8481-651cf8e80a27" >
+			<when expression="#[vars.outputFormat == 'XML']">
+				<json-logger:logger doc:name="XML" doc:id="b1232f84-e08e-4d46-a95f-3e7ef6ed4c65" config-ref="JSON_Logger_Config" message="Output format XML" tracePoint="FLOW">
+					<json-logger:content ><![CDATA[#[import modules::JSONLoggerModule output application/json ---
+{
+    payload: ''
+}]]]></json-logger:content>
+				</json-logger:logger>
+				<ee:transform doc:name="Format as XML" doc:id="602eaec3-9921-4120-a6d4-7ff7f5945bb6" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+Prospects: {
+		(payload map ( prospect , index ) -> {
+			prospect: {
+				name : prospect.name,
+				phone: prospect.phone,
+				id: prospect.id	,	
+                address: {
+                    country: prospect.address.country,
+                    city: prospect.address.city,
+                    street: prospect.address.street,
+                    postalCode: prospect.address.postalCode,
+                    state: prospect.address.state
+                }		
+			}
+		})
+	}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression="#[vars.outputFormat == 'Json']">
+				<json-logger:logger doc:name="Json" doc:id="e5a19c71-1623-45af-ad0e-b9e2b2da9aed" config-ref="JSON_Logger_Config" message="Output format Json" tracePoint="FLOW" >
+					<json-logger:content ><![CDATA[#[import modules::JSONLoggerModule output application/json ---
+{
+    payload: ''
+}]]]></json-logger:content>
+				</json-logger:logger>
+				<ee:transform doc:name="Format as Json" doc:id="80840901-ed0b-4c39-9ebd-22f448e87f7c" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<json-logger:logger doc:name="Not configured" doc:id="e75a812a-94ee-498a-8942-675d2a6d7a96" config-ref="JSON_Logger_Config" message="Not configured" tracePoint="FLOW">
+					<json-logger:content ><![CDATA[#[import modules::JSONLoggerModule output application/json ---
+{
+    payload: ''
+}]]]></json-logger:content>
+				</json-logger:logger>
+			</otherwise>
+		</choice>
+		<json-logger:logger doc:name="End" doc:id="94118c93-470a-4966-b5b7-eff714894d57" config-ref="JSON_Logger_Config" message="Finishing flow" tracePoint="END">
+			<json-logger:content ><![CDATA[#[import modules::JSONLoggerModule output application/json ---
+{
+    payload: ''
+}]]]></json-logger:content>
+		</json-logger:logger>
+	</sub-flow>
+</mule>

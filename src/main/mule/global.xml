@@ -1,25 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
-	xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
-	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
-http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd 
-http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
-http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
-	
-	<http:listener-config name="exp-prospects-api-httpListenerConfig">
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd  http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+    <http:listener-config name="exp-prospects-api-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="${http.port}" protocol="HTTPS">
             <tls:context>
                 <tls:key-store type="jks" path="${secure::tls.path}" alias="${secure::tls.alias}" keyPassword="${secure::tls.key}" password="${secure::tls.pwd}" />
             </tls:context>
         </http:listener-connection>
     </http:listener-config>
-    <apikit:config name="exp-prospects-api-config" api="resource::0efa2e96-5661-4a95-ab6d-dc1f38566678:exp-prospects-api:1.0.0:raml:zip:exp-prospects-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
-	<global-property doc:name="Global Property" doc:id="6858a722-a293-4179-be89-7aeb201cdb2c" name="mule-env" value="dev" />
+    <apikit:config name="exp-prospects-api-config" api="resource::0efa2e96-5661-4a95-ab6d-dc1f38566678:exp-prospects-api:1.0.2:raml:zip:exp-prospects-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <global-property doc:name="Global Property" doc:id="6858a722-a293-4179-be89-7aeb201cdb2c" name="mule-env" value="dev" />
     <global-property doc:name="Global Property" doc:id="42d71dca-c70c-4c7b-9b6e-282784cd807d" name="mule-key" value="DevEncryptionKey" />
     <configuration-properties doc:name="Configuration properties" doc:id="043507c3-f88e-41cf-8acd-a0cc2365556f" file="mule-app-config.properties" />
     <secure-properties:config name="Env-Configs" doc:name="Secure Properties Config" doc:id="aa18e760-23ff-42f5-ba96-aab0ba2990b0" file="mule-${mule-env}.yaml" key="${mule-key}">
@@ -27,4 +17,13 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
     </secure-properties:config>
     <configuration doc:name="Configuration" doc:id="4c8a8304-a22a-4d32-8d1d-451786adb8c0" defaultErrorHandler-ref="appGlobalErrorHandler" />
     <configuration-properties doc:name="Configuration properties" doc:id="6d9fa91f-520a-4b3e-a417-8c75cda5b4fe" file="mule-exceptions.properties" />
+    <http:request-config name="Request-proc-prospects-api" doc:name="HTTP Request configuration" doc:id="acd727e5-6eb2-45be-9988-05575f059127" basePath="/api" >
+		<http:request-connection protocol="HTTPS" host="${secure::proc-prospects-api.url}">
+			<tls:context >
+				<tls:trust-store insecure="true" />
+				<tls:key-store type="jks" path="${secure::tls.path}" alias="${secure::tls.alias}" keyPassword="${secure::tls.key}" password="${secure::tls.pwd}"/>
+			</tls:context>
+		</http:request-connection>
+	</http:request-config>
+	<json-logger:config name="JSON_Logger_Config" doc:name="JSON Logger Config" doc:id="2324ec5b-1348-4a13-9c7c-b5b8591a8020" environment="${mule-env}" />
 </mule>
